@@ -1,0 +1,21 @@
+{% apply inline_css(source('@styles/email.css')) %}
+<html>
+<head></head>
+<body>
+    <p class="text-red">Hello {{ customer.name }},</p>
+
+    <p>Thank you for your booking! Here are the details of your reservation:</p>
+
+    <ul>
+        <li>Booking ID: {{ booking.id }}</li>
+        <li>URL: {{ url('booking_show', {uid: booking.uid}) }}</li>
+        <li>Trip: {{ trip.name }}</li>
+        <li>Date: {{ booking.date|date('F j, Y') }}</li>
+    </ul>
+
+    <p>If you have any questions or need to make changes to your booking, please contact us at.</p>
+
+    <p>Thank you,<br>The Volyty Team</p>
+</body>
+</html>
+{% endapply %}
