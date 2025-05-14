@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -33,7 +34,9 @@ final class TripController extends AbstractController
         Request $request,
         CustomerRepository $customers,
         EntityManagerInterface $em,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        #[Autowire('%kernel.project_dir%/assets/terms-of-service.pdf')]
+        string $termsPath,
     ): Response {
         $form = $this->createForm(BookingType::class)->handleRequest($request);
 
@@ -53,6 +56,7 @@ final class TripController extends AbstractController
                 ->subject('Booking Confirmation for ' . $trip->getName())
                 // ->textTemplate('email/booking_confirmation.txt.twig')
                 ->htmlTemplate('email/booking_confirmation.html.twig')
+                ->attachFromPath($termsPath, 'Terms of Service.pdf')
                 ->context([
                     'customer' => $customer,
                     'trip' => $trip,
