@@ -9,10 +9,12 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Mailer\Test\InteractsWithMailer;
+use Zenstruck\Mailer\Test\TestEmail;
 
 class BookingTest extends KernelTestCase
 {
-    use ResetDatabase, Factories, HasBrowser;
+    use ResetDatabase, Factories, HasBrowser, InteractsWithMailer;
 
     /**
      * @test
@@ -21,7 +23,7 @@ class BookingTest extends KernelTestCase
     {
         $trip = TripFactory::createOne([
             'name' => 'Visit Mars',
-            'slug' => 'mars',
+            'slug' => 'iss',
             'tagLine' => 'The red planet',
         ]);
 
@@ -29,7 +31,8 @@ class BookingTest extends KernelTestCase
         CustomerFactory::assert()->empty();
 
         $this->browser()
-            ->visit('/trip/mars')
+            ->throwExceptions()
+            ->visit('/trip/iss')
             ->assertSuccessful()
             ->fillField('Name', 'Bruce Wayne')
             ->fillField('Email', 'bruce@wayne-enterprises.com')
@@ -48,6 +51,19 @@ class BookingTest extends KernelTestCase
         BookingFactory::assert()
             ->count(1)
             ->exists(['trip'=>$trip, 'customer' => CustomerFactory::first()])
+        ;
+
+        $this->mailer()
+            ->assertSentEmailCount(1)
+            ->assertEmailSentTo('bruce@wayne-enterprises.com', function(TestEmail $email) {
+                $email
+                    ->assertSubject('Booking Confirmation for Visit Mars')
+                    ->assertContains('Visit Mars')
+                    ->assertContains('/booking/'.BookingFactory::first()->getUid())
+                    ->assertHasFile('Terms of Service.pdf')
+                    // ->dd()
+                ;
+            })
         ;
     }
 }
