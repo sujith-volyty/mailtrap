@@ -9,12 +9,13 @@ use App\Form\BookingType;
 use App\Repository\CustomerRepository;
 use App\Repository\TripRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Mime\Email;
 
 final class TripController extends AbstractController
 {
@@ -46,11 +47,17 @@ final class TripController extends AbstractController
             $em->persist($booking);
             $em->flush();
 
-            $email = (new Email())
-                ->from('sujith.nara@volyty.com')
-                ->to($customer->getEmail())
-                ->subject('Booking Confirmation')
-                ->text('Your booking has been confirmed!');
+            $email = (new TemplatedEmail())
+                ->from(new Address('sujith.nara@volyty.com', 'Sujith Volyty'))
+                ->to(new Address($customer->getEmail(), $customer->getName()))
+                ->subject('Booking Confirmation for ' . $trip->getName())
+                ->textTemplate('email/booking_confirmation.txt.twig')
+                ->context([
+                    'customer' => $customer,
+                    'trip' => $trip,
+                    'booking' => $booking,
+                ]);
+
             $mailer->send($email);
 
             return $this->redirectToRoute('booking_show', ['uid' => $booking->getUid()]);

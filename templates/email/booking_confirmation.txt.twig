@@ -1,0 +1,13 @@
+Hello {{ customer.name }},
+
+Thank you for your booking! Here are the details of your reservation:
+
+- Booking ID: {{ booking.id }}
+- URL: {{ url('booking_show', {uid: booking.uid}) }}
+- Trip: {{ trip.name }}
+- Date: {{ booking.date|date('F j, Y') }}
+
+If you have any questions or need to make changes to your booking, please contact us at.
+
+Thank you,
+The Volyty Team
