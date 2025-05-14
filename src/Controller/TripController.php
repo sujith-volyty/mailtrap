@@ -51,7 +51,7 @@ final class TripController extends AbstractController
             $em->flush();
 
             $email = (new TemplatedEmail())
-                ->from(new Address('sujith.nara@volyty.com', 'Sujith Volyty'))
+                ->replyTo(new Address('sujith.nara@volyty.com', 'Sujith Volyty'))
                 ->to(new Address($customer->getEmail(), $customer->getName()))
                 ->subject('Booking Confirmation for ' . $trip->getName())
                 // ->textTemplate('email/booking_confirmation.txt.twig')
