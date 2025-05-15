@@ -18,11 +18,13 @@ use Symfony\Component\Mailer\Header\MetadataHeader;
 use Symfony\Component\Mailer\Header\TagHeader;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
 #[AsCommand(
     name: 'app:send-booking-reminders',
     description: 'Send booking reminder emails',
 )]
+#[AsCronTask('# # * * *')]
 class SendBookingRemindersCommand extends Command
 {
     public function __construct(
