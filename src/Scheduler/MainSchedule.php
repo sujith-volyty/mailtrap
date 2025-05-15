@@ -26,6 +26,16 @@ final class MainSchedule implements ScheduleProviderInterface
             //         new RunCommandMessage('app:send-booking-reminders')
             //     )
             // )
+            ->add(RecurringMessage::cron(
+                    '#midnight',
+                    new RunCommandMessage('messenger:monitor:purge --exclude-schedules'),
+                )
+            )
+            ->add(RecurringMessage::cron(
+                    '#midnight',
+                    new RunCommandMessage('messenger:monitor:schedule:purge'),
+                )
+            )
             ->stateful($this->cache)
             ->processOnlyLastMissedRun(true)
         ;
