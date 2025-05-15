@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\BookingDto;
+use App\Email\BookingEmailFactory;
 use App\Entity\Booking;
 use App\Entity\Trip;
 use App\Form\BookingType;
@@ -37,8 +38,7 @@ final class TripController extends AbstractController
         CustomerRepository $customers,
         EntityManagerInterface $em,
         MailerInterface $mailer,
-        #[Autowire('%kernel.project_dir%/assets/terms-of-service.pdf')]
-        string $termsPath,
+        BookingEmailFactory $emailFactory,
     ): Response {
         $form = $this->createForm(BookingType::class)->handleRequest($request);
 
@@ -52,24 +52,7 @@ final class TripController extends AbstractController
             $em->persist($booking);
             $em->flush();
 
-            $email = (new TemplatedEmail())
-                ->replyTo(new Address('sujith.nara@volyty.com', 'Sujith Volyty'))
-                ->to(new Address($customer->getEmail(), $customer->getName()))
-                ->subject('Booking Confirmation for ' . $trip->getName())
-                // ->textTemplate('email/booking_confirmation.txt.twig')
-                ->htmlTemplate('email/booking_confirmation.html.twig')
-                ->attachFromPath($termsPath, 'Terms of Service.pdf')
-                ->context([
-                    'customer' => $customer,
-                    'trip' => $trip,
-                    'booking' => $booking,
-                ]);
-
-            $email->getHeaders()->add(new TagHeader('booking'));
-            $email->getHeaders()->add(new MetadataHeader('booking_uid', $booking->getUid()));
-            $email->getHeaders()->add(new MetadataHeader('customer_uid', $customer->getUid()));
-
-            $mailer->send($email);
+            $mailer->send($emailFactory->createBookingConfirmation($booking));
 
             return $this->redirectToRoute('booking_show', ['uid' => $booking->getUid()]);
         }
